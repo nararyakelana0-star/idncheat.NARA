@@ -15,11 +15,14 @@ import {
   Gamepad2,
   Music2,
   Volume2,
+  MousePointer2,
+  Upload,
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth, AVATAR_GRADIENTS } from '../../context/AuthContext'
 import { TIERS } from '../../data/curriculum'
 import { MUSIC_TRACKS } from '../../audio/consoleMusic'
+import { CURSOR_PRESETS } from '../../data/cursors'
 import PageTitle from '../ui/PageTitle'
 import Avatar from '../ui/Avatar'
 
@@ -59,7 +62,7 @@ function Toggle({ on, onToggle, label }) {
 }
 
 export default function SettingsPage() {
-  const { state, setTheme, addXp } = useApp()
+  const { state, setTheme, toggleConsole, addXp } = useApp()
   const { user, updateUser } = useAuth()
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -92,6 +95,26 @@ export default function SettingsPage() {
       const s = Math.min(img.width, img.height)
       ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size)
       set('avatarUrl', canvas.toDataURL('image/jpeg', 0.85))
+      URL.revokeObjectURL(url)
+    }
+    img.src = url
+    e.target.value = ''
+  }
+
+  /* Upload kursor custom: crop tengah → 32×32 PNG */
+  const handleCursorUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = 32
+      canvas.height = 32
+      const ctx = canvas.getContext('2d')
+      const s = Math.min(img.width, img.height)
+      ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, 32, 32)
+      setTheme({ cursor: 'custom', cursorUrl: canvas.toDataURL('image/png') })
       URL.revokeObjectURL(url)
     }
     img.src = url
@@ -225,22 +248,23 @@ export default function SettingsPage() {
             <Gamepad2 className="h-[18px] w-[18px] text-brand-500" /> Console Mode
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-slate-400">
-            UI berubah total ala game console (PS4 / Nintendo Switch): dark neon, bottom bar,
-            plus musik chiptune yang bisa diganti.
+            UI berubah total ala game console: boot screen intro, layar penuh otomatis, tema
+            neon PS4, bottom bar, musik main menu yang bisa diganti, dan sound effect di setiap
+            tombol.
           </p>
           <div className="mt-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Nyalakan Console Mode</p>
               <p className="text-xs text-slate-400">Sidebar diganti bottom bar + tema neon</p>
             </div>
-            <Toggle on={theme.console} onToggle={() => setTheme({ console: !theme.console })} label="Console Mode" />
+            <Toggle on={theme.console} onToggle={() => toggleConsole(!theme.console)} label="Console Mode" />
           </div>
 
           <div className="mt-5">
             <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
               <Music2 className="h-3.5 w-3.5" /> Lagu console
             </p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
               {MUSIC_TRACKS.map((t, i) => (
                 <button
                   key={t.id}
@@ -253,6 +277,9 @@ export default function SettingsPage() {
                 >
                   <Music2 className="mb-1 h-4 w-4" />
                   {t.name}
+                  {i === 0 && (
+                    <span className="mt-0.5 block text-[9px] font-semibold opacity-70">default console</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -275,6 +302,53 @@ export default function SettingsPage() {
               className="w-36 accent-brand-600"
               aria-label="Volume musik"
             />
+          </div>
+
+          <div className="mt-5">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
+              <MousePointer2 className="h-3.5 w-3.5" /> Cursor console
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              {CURSOR_PRESETS.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => setTheme({ cursor: p.id, cursorUrl: '' })}
+                  title={p.name}
+                  className={`flex items-center gap-1.5 rounded-xl border-2 px-3 py-1.5 text-xs font-bold transition ${
+                    theme.cursor === p.id && !theme.cursorUrl
+                      ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+                      : 'border-slate-200 text-slate-500 hover:border-slate-300 dark:border-slate-700 dark:text-slate-400'
+                  }`}
+                >
+                  <span className="text-base leading-none">{p.preview}</span>
+                  {p.name}
+                </button>
+              ))}
+              <label className="btn-ghost inline-flex cursor-pointer items-center gap-1.5 !px-3 !py-1.5 text-xs">
+                <Upload className="h-3.5 w-3.5" /> Upload Kursor
+                <input type="file" accept="image/*" className="hidden" onChange={handleCursorUpload} />
+              </label>
+              {theme.cursorUrl && (
+                <button
+                  onClick={() => setTheme({ cursor: 'default', cursorUrl: '' })}
+                  className="btn-ghost !px-3 !py-1.5 text-xs"
+                >
+                  Hapus
+                </button>
+              )}
+            </div>
+            <div className="mt-2.5 flex items-center gap-2.5">
+              {theme.cursorUrl ? (
+                <img src={theme.cursorUrl} alt="Preview kursor" className="h-8 w-8 rounded-md border border-slate-200 dark:border-slate-700" />
+              ) : (
+                <span className="grid h-8 w-8 place-items-center rounded-md border border-slate-200 text-base dark:border-slate-700">
+                  {CURSOR_PRESETS.find((p) => p.id === theme.cursor)?.preview || '↖'}
+                </span>
+              )}
+              <p className="text-[11px] leading-relaxed text-slate-400">
+                Kursor aktif saat Console Mode menyala. Upload otomatis di-crop & resize ke 32×32.
+              </p>
+            </div>
           </div>
         </section>
 

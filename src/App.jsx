@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { AppProvider, useApp } from './context/AppContext'
+import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import ConsoleBar from './components/ConsoleBar'
+import BootSplash from './components/BootSplash'
+import PowerOffSplash from './components/PowerOffSplash'
 import Toasts from './components/Toasts'
 import AuthPage from './components/pages/AuthPage'
 import DashboardPage from './components/pages/DashboardPage'
@@ -22,6 +25,24 @@ import SettingsPage from './components/pages/SettingsPage'
    AuthProvider (luar) → AppProvider (gamifikasi per-akun) → Shell
    Tanpa login → AuthPage (login / sign up)
    ===================================================================== */
+
+/* Partikel melayang (posisi & durasi deterministik) — hanya tampil di Console Mode */
+const PARTICLES = [
+  { left: 4, size: 5, dur: 26, delay: 0, cls: '' },
+  { left: 11, size: 3, dur: 34, delay: 6, cls: 'glow-cyan' },
+  { left: 18, size: 6, dur: 29, delay: 12, cls: '' },
+  { left: 26, size: 4, dur: 38, delay: 3, cls: 'glow-violet' },
+  { left: 33, size: 3, dur: 31, delay: 17, cls: '' },
+  { left: 41, size: 5, dur: 27, delay: 9, cls: 'glow-cyan' },
+  { left: 49, size: 4, dur: 36, delay: 21, cls: '' },
+  { left: 56, size: 6, dur: 30, delay: 1, cls: 'glow-violet' },
+  { left: 63, size: 3, dur: 33, delay: 14, cls: '' },
+  { left: 70, size: 5, dur: 28, delay: 7, cls: 'glow-cyan' },
+  { left: 78, size: 4, dur: 37, delay: 19, cls: '' },
+  { left: 85, size: 6, dur: 25, delay: 11, cls: 'glow-violet' },
+  { left: 91, size: 3, dur: 32, delay: 24, cls: '' },
+  { left: 97, size: 4, dur: 29, delay: 5, cls: 'glow-cyan' },
+]
 
 function PageRouter() {
   const { state } = useApp()
@@ -51,15 +72,37 @@ function PageRouter() {
 }
 
 function Shell() {
-  const { state } = useApp()
+  const { state, poweringOff } = useApp()
   const consoleMode = !!state.theme.console
+  const [booting, setBooting] = useState(consoleMode)
+  const prevConsole = useRef(consoleMode)
+  useEffect(() => {
+    if (consoleMode && !prevConsole.current) setBooting(true)
+    prevConsole.current = consoleMode
+  }, [consoleMode])
+
   return (
     <div className="min-h-screen">
-      {/* Latar ambient halus (dot grid + blob) */}
+      {/* Latar ambient halus (dot grid + blob + partikel bergerak di Console Mode) */}
       <div className="ambient-bg" aria-hidden="true">
         <div className="ambient-grid" />
         <div className="ambient-blob b1" />
         <div className="ambient-blob b2" />
+        <div className="ambient-particles">
+          {PARTICLES.map((p, i) => (
+            <span
+              key={i}
+              className={`ambient-particle ${p.cls}`}
+              style={{
+                left: `${p.left}%`,
+                width: p.size,
+                height: p.size,
+                animationDuration: `${p.dur}s`,
+                animationDelay: `${p.delay}s`,
+              }}
+            />
+          ))}
+        </div>
       </div>
       <Header />
       {consoleMode ? null : <Sidebar />}
@@ -79,6 +122,8 @@ function Shell() {
         </div>
       </main>
       {consoleMode && <ConsoleBar />}
+      {booting && <BootSplash onDone={() => setBooting(false)} />}
+      {poweringOff && <PowerOffSplash />}
       <Toasts />
     </div>
   )
@@ -86,7 +131,13 @@ function Shell() {
 
 function Root() {
   const { user } = useAuth()
-  return user ? <Shell /> : <AuthPage />
+  return user ? (
+    <ErrorBoundary>
+      <Shell />
+    </ErrorBoundary>
+  ) : (
+    <AuthPage />
+  )
 }
 
 export default function App() {

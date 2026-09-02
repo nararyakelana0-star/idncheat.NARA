@@ -7,6 +7,8 @@ import PageTitle from '../ui/PageTitle'
 import IconTile from '../ui/IconTile'
 import ProgressBar from '../ui/ProgressBar'
 import Badge from '../ui/Badge'
+import GameCover from '../ui/GameCover'
+import { getLessons } from '../../data/curriculum'
 
 /* =====================================================================
    Kursus Saya — kursus yang sedang dikerjakan (progress > 0)
@@ -14,6 +16,7 @@ import Badge from '../ui/Badge'
 
 export default function MyCoursesPage() {
   const { state, navigate } = useApp()
+  const consoleMode = !!state.theme.console
 
   const enrolled = Object.entries(state.courseProgress)
     .filter(([, v]) => v > 0)
@@ -49,6 +52,24 @@ export default function MyCoursesPage() {
           <button onClick={() => navigate('catalog')} className="btn-primary mt-5">
             Buka Katalog
           </button>
+        </div>
+      ) : consoleMode ? (
+        /* Console Mode: rak cover game */
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {enrolled.map(({ course, progress }) => {
+            const cat = categoryById(course.category)
+            return (
+              <GameCover
+                key={course.id}
+                course={course}
+                Icon={cat.icon}
+                gradient={cat.gradient}
+                progress={progress}
+                lessonCount={getLessons(course).length}
+                onClick={() => navigate('course', { courseId: course.id })}
+              />
+            )
+          })}
         </div>
       ) : (
         <ul className="space-y-3">

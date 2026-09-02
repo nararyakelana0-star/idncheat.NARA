@@ -30,8 +30,10 @@ const NAV = [
 ]
 
 export default function ConsoleBar() {
-  const { state, navigate, setTheme } = useApp()
+  const { state, navigate, setTheme, toggleConsole } = useApp()
   const theme = state.theme
+  const trackIdx = Math.max(0, Math.min(MUSIC_TRACKS.length - 1, Number(theme.track) || 0))
+  const currentTrack = MUSIC_TRACKS[trackIdx] || MUSIC_TRACKS[0]
 
   return (
     <nav className="console-bar" aria-label="Navigasi console">
@@ -43,7 +45,10 @@ export default function ConsoleBar() {
           aria-label={label}
           className={`console-nav-item ${state.page.name === page ? 'active' : ''}`}
         >
-          <Icon className="h-5 w-5" />
+          <span className="grid h-9 w-9 place-items-center rounded-xl">
+            <Icon className="h-5 w-5" />
+          </span>
+          <span className="console-nav-label">{label}</span>
         </button>
       ))}
 
@@ -51,12 +56,12 @@ export default function ConsoleBar() {
 
       {/* Ganti lagu chiptune */}
       <button
-        onClick={() => setTheme({ track: (theme.track + 1) % MUSIC_TRACKS.length })}
+        onClick={() => setTheme({ track: (trackIdx + 1) % MUSIC_TRACKS.length })}
         title="Ganti lagu"
         className="console-music-btn"
       >
         <Music2 className="h-4 w-4" />
-        <span className="console-music-label">{MUSIC_TRACKS[theme.track].name}</span>
+        <span className="console-music-label">{currentTrack.name}</span>
       </button>
 
       {/* Volume */}
@@ -67,7 +72,7 @@ export default function ConsoleBar() {
           min={0}
           max={1}
           step={0.05}
-          value={theme.volume}
+          value={Math.max(0, Math.min(1, Number(theme.volume) || 0.5))}
           onChange={(e) => setTheme({ volume: Number(e.target.value) })}
           className="w-16 accent-brand-500"
           aria-label="Volume musik"
@@ -76,7 +81,7 @@ export default function ConsoleBar() {
 
       {/* Keluar console mode */}
       <button
-        onClick={() => setTheme({ console: false })}
+        onClick={() => toggleConsole(false)}
         title="Keluar Console Mode"
         aria-label="Keluar Console Mode"
         className="console-nav-item"

@@ -6,6 +6,7 @@ import PageTitle from '../ui/PageTitle'
 import Badge from '../ui/Badge'
 import IconTile from '../ui/IconTile'
 import ProgressBar from '../ui/ProgressBar'
+import GameCover from '../ui/GameCover'
 
 /* =====================================================================
    Course Catalog — filter jenjang (Murojaah/Upgrade) + kategori
@@ -17,6 +18,21 @@ function CourseCard({ course }) {
   const cat = CATEGORIES.find((c) => c.id === course.category)
   const Icon = cat.icon
   const progress = state.courseProgress[course.id] || 0
+  const consoleMode = !!state.theme.console
+
+  /* Console Mode: tampilan cover game */
+  if (consoleMode) {
+    return (
+      <GameCover
+        course={course}
+        Icon={Icon}
+        gradient={cat.gradient}
+        progress={progress}
+        lessonCount={getLessons(course).length}
+        onClick={() => navigate('course', { courseId: course.id })}
+      />
+    )
+  }
 
   return (
     <div className="card group flex flex-col p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-glass dark:hover:border-brand-500/40">

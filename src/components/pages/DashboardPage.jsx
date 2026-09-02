@@ -47,7 +47,7 @@ function Greeting() {
 }
 
 function DailyTrophy() {
-  const { state, setTheme } = useApp()
+  const { state, toggleConsole } = useApp()
   const lv = levelInfo(state.xp)
   const a = dailyAchievement()
   const consoleMode = !!state.theme.console
@@ -69,9 +69,9 @@ function DailyTrophy() {
         </span>
       ) : (
         <button
-          onClick={() => setTheme({ console: true })}
+          onClick={() => toggleConsole(true)}
           className="btn-ghost hidden !px-3.5 !py-2 text-xs sm:inline-flex"
-          title="Nyalakan Console Mode — UI ala game console + musik chiptune"
+          title="Nyalakan Console Mode — boot screen + fullscreen + UI game console + musik PS4"
         >
           <Gamepad2 className="h-4 w-4 text-brand-500" /> Console Mode
         </button>

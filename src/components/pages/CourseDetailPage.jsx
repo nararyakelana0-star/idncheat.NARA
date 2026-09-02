@@ -31,16 +31,86 @@ const TYPE_META = {
   quiz: { icon: ListChecks, label: 'Kuis' },
 }
 
-function LessonList({ course, progress, navigate }) {
+function LessonList({ course, progress, navigate, consoleMode = false }) {
   const lessons = getLessons(course)
   const completedCount = Math.round((progress / 100) * lessons.length)
   const nextIdx = lessons.findIndex((l, i) => i >= completedCount && l.type !== 'quiz')
   const quizUnlocked = completedCount >= lessons.length - 1
+  const cat = categoryById(course.category)
 
   const openLesson = (i) => {
     const l = lessons[i]
     if (l.type === 'quiz') navigate('quiz', { courseId: course.id })
     else navigate('lesson', { courseId: course.id, lessonIndex: i })
+  }
+
+  /* Console Mode: baris cartridge game */
+  if (consoleMode) {
+    return (
+      <div className="card p-4 sm:p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-display text-base font-extrabold tracking-wide text-white">MISI BELAJAR</h3>
+          <span className="rounded-full bg-blue-500/15 px-3 py-1 text-[11px] font-extrabold text-cyan-300">
+            {completedCount}/{lessons.length} selesai
+          </span>
+        </div>
+        <ul className="space-y-2">
+          {lessons.map((l, i) => {
+            const meta = TYPE_META[l.type] || TYPE_META.reading
+            const Icon = meta.icon
+            const lDone = i < completedCount
+            const isNext = i === nextIdx
+            const clickable = lDone || isNext || (l.type === 'quiz' && quizUnlocked)
+            return (
+              <li key={i}>
+                <button
+                  onClick={() => clickable && openLesson(i)}
+                  disabled={!clickable}
+                  className={`flex w-full items-center gap-3.5 rounded-2xl border p-3 text-left transition ${
+                    clickable
+                      ? 'cursor-pointer border-blue-400/25 bg-blue-500/[0.06] hover:-translate-y-0.5 hover:border-blue-400/70 hover:bg-blue-500/15 hover:shadow-[0_0_22px_-6px_rgba(45,140,255,0.6)]'
+                      : 'cursor-not-allowed border-white/5 bg-white/[0.03] opacity-50'
+                  }`}
+                >
+                  <span
+                    className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br shadow-lg ${cat.gradient} ${
+                      lDone ? 'opacity-55' : ''
+                    }`}
+                  >
+                    {lDone ? (
+                      <Check className="h-5 w-5 text-white" />
+                    ) : l.type === 'quiz' ? (
+                      quizUnlocked ? <ListChecks className="h-5 w-5 text-white" /> : <Lock className="h-4 w-4 text-white/80" />
+                    ) : isNext ? (
+                      <Play className="h-5 w-5 fill-white text-white" />
+                    ) : (
+                      <Lock className="h-4 w-4 text-white/70" />
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className={`truncate text-sm font-extrabold ${lDone ? 'text-slate-400' : 'text-white'}`}>
+                      {l.title}
+                    </p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
+                      <Icon className="h-3 w-3" /> {meta.label}
+                      <span className="text-slate-600">·</span>
+                      <Clock className="h-3 w-3" /> {l.minutes} mnt
+                    </p>
+                  </div>
+                  {isNext ? (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-[0_0_16px_-2px_rgba(45,140,255,0.8)]">
+                      <Play className="h-3 w-3 fill-current" /> Main
+                    </span>
+                  ) : lDone ? (
+                    <span className="shrink-0 text-[11px] font-extrabold text-emerald-300">Ulangi</span>
+                  ) : null}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+    )
   }
 
   return (
@@ -220,7 +290,7 @@ export default function CourseDetailPage() {
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
         {/* Kolom utama: materi */}
         <div className="lg:col-span-2">
-          <LessonList course={course} progress={progress} navigate={navigate} />
+          <LessonList course={course} progress={progress} navigate={navigate} consoleMode={!!state.theme.console} />
         </div>
 
         {/* Rail kanan */}
