@@ -102,10 +102,13 @@ export function AppProvider({ children }) {
   const seq = useRef(1)
   const { user, updateUser } = useAuth()
 
-  /* Terapkan tema ke <html> (class dark / data-accent / data-density / data-console) */
+  /* Terapkan tema ke <html> (class dark / data-accent / data-density / data-console)
+     Catatan: Console Mode selalu memaksa tema dark agar semua teks
+     memakai varian dark: (hindari teks gelap di atas latar neon gelap). */
   useEffect(() => {
     const root = document.documentElement
-    root.classList.toggle('dark', state.theme.mode === 'dark')
+    const isDark = state.theme.mode === 'dark' || state.theme.console
+    root.classList.toggle('dark', isDark)
     root.dataset.accent = state.theme.accent
     root.dataset.density = state.theme.density
     root.dataset.console = state.theme.console ? 'on' : 'off'
