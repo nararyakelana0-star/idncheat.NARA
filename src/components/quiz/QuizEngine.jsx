@@ -198,9 +198,19 @@ export default function QuizEngine({ course, quiz }) {
             </button>
             <div className="min-w-0">
               <p className="truncate font-display text-sm font-bold text-slate-900 dark:text-white">
+                {quiz.isDaily && (
+                  <span className="mr-1.5 inline-block translate-y-[-1px] rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                    Harian
+                  </span>
+                )}
                 {quiz.title}
               </p>
               <p className="text-[11px] font-semibold text-slate-400">
+                {quiz.isDaily && (
+                  <span className="mr-1 text-amber-600/80 dark:text-amber-400/80">
+                    {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })} ·
+                  </span>
+                )}
                 Soal {index + 1} dari {quiz.questions.length} · Total{' '}
                 <span className="text-amber-600 dark:text-amber-400">{quizXpTotal(quiz)} XP</span>
               </p>

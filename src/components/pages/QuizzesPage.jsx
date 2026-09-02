@@ -2,7 +2,8 @@ import React from 'react'
 import { ListChecks, Play, RotateCcw, Star, CheckCircle2 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { COURSES, categoryById } from '../../data/curriculum'
-import { quizForCourse, quizXpTotal } from '../../data/questions'
+import { dailyQuizForCourse } from '../../data/quizPool'
+import { quizXpTotal } from '../../data/questions'
 import PageTitle from '../ui/PageTitle'
 import IconTile from '../ui/IconTile'
 import Badge from '../ui/Badge'
@@ -15,17 +16,17 @@ export default function QuizzesPage() {
   const { state, navigate } = useApp()
 
   const rows = COURSES.filter((c) => c.tiers.includes(state.tier))
-    .map((course) => ({ course, quiz: quizForCourse(course.id) }))
+    .map((course) => ({ course, quiz: dailyQuizForCourse(course.id, new Date()) }))
     .filter((r) => r.quiz)
 
   return (
     <div className="mx-auto max-w-4xl">
       <PageTitle
         crumb="Evaluasi"
-        title="Kuis & Evaluasi"
-        sub={`${rows.length} kuis tersedia untuk jenjang ${
+        title="Kuis Harian"
+        sub={`${rows.length} kursus dengan kuis harian untuk jenjang ${
           state.tier === 'murojaah' ? 'Murojaah (TK–SD)' : 'Upgrade (SMP–SMK)'
-        }. Kumpulkan XP, jaga streak, dan buktikan pemahamanmu!`}
+        }. Setiap kursus: 5 soal pilihan ganda yang susunannya BERUBAH SETIAP HARI. Kumpulkan XP & jaga streakmu!`}
       />
 
       <ul className="grid gap-4 md:grid-cols-2">
@@ -60,9 +61,8 @@ export default function QuizzesPage() {
                 <span className="inline-flex items-center gap-1">
                   <ListChecks className="h-3.5 w-3.5" /> {quiz.questions.length} soal
                 </span>
-                <span className="text-slate-400 dark:text-slate-500">
-                  {quiz.questions.filter((x) => x.type === 'mc').length} PG ·{' '}
-                  {quiz.questions.filter((x) => x.type === 'essay').length} Essay
+                <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                  <Star className="h-3 w-3" /> berubah tiap hari
                 </span>
                 <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
                   <Star className="h-3.5 w-3.5 fill-amber-300 dark:fill-amber-400/50" /> +{quizXpTotal(quiz)} XP

@@ -2,7 +2,7 @@ import React from 'react'
 import { ArrowLeft, CalendarClock } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { courseById } from '../../data/curriculum'
-import { quizForCourse } from '../../data/questions'
+import { dailyQuizForCourse } from '../../data/quizPool'
 import QuizEngine from '../quiz/QuizEngine'
 
 /* =====================================================================
@@ -24,7 +24,7 @@ export default function QuizPage() {
     )
   }
 
-  const quiz = quizForCourse(course.id)
+  const quiz = dailyQuizForCourse(course.id, new Date())
   if (!quiz) {
     return (
       <div className="mx-auto max-w-xl">

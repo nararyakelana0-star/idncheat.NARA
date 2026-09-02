@@ -10,11 +10,13 @@ import {
   Play,
   BookOpenCheck,
   ChevronRight,
+  Dumbbell,
 } from 'lucide-react'
-import { useApp } from '../../context/AppContext'
+import { useApp, levelInfo } from '../../context/AppContext'
 import { courseById, categoryById, getLessons } from '../../data/curriculum'
 import { LESSON_CONTENT } from '../../data/lessonContent'
 import { quizForCourse, quizXpTotal } from '../../data/questions'
+import { dailyChallenge, levelBand, BAND_LABEL } from '../../data/challenges'
 import Badge from '../ui/Badge'
 import IconTile from '../ui/IconTile'
 import ProgressBar from '../ui/ProgressBar'
@@ -63,6 +65,9 @@ export default function LessonPage() {
   const MetaIcon = meta.icon
   const quiz = quizForCourse(course.id)
   const completedQuiz = state.completedQuizzes[course.id]
+  const lv = levelInfo(state.xp)
+  const band = levelBand(lv.level)
+  const challenge = dailyChallenge(course.category, lv.level, idx)
 
   const goNext = () => {
     if (next) {
@@ -85,41 +90,46 @@ export default function LessonPage() {
     <div className="mx-auto max-w-3xl">
       <button
         onClick={() => navigate('course', { courseId: course.id })}
-        className="mb-4 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
+        className="console-hide mb-4 inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 transition hover:text-brand-600 dark:text-slate-400 dark:hover:text-brand-400"
       >
         <ArrowLeft className="h-4 w-4" /> {course.title}
       </button>
 
-      {/* Header materi */}
+      {/* Header materi — hero visual */}
       <div className="card overflow-hidden">
-        <div className={`h-2 bg-gradient-to-r ${cat.gradient}`} />
-        <div className="p-5 sm:p-6">
-          <div className="flex items-start gap-4">
-            <IconTile Icon={Icon} gradient={cat.gradient} className="h-12 w-12 rounded-xl" />
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="slate">
-                  <MetaIcon className="h-3 w-3" /> {meta.label}
-                </Badge>
-                <Badge tone="slate">
-                  <Clock className="h-3 w-3" /> {lesson.minutes} mnt
-                </Badge>
-                <span className="text-[11px] font-bold text-slate-400">
-                  Materi {idx + 1} dari {lessons.length}
-                </span>
+        <div className={`relative bg-gradient-to-br ${cat.gradient} px-5 py-7 sm:px-7 sm:py-8`}>
+          <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px)', backgroundSize: '18px 18px' }} aria-hidden="true" />
+          <div className="relative">
+            <p className="text-[10px] font-extrabold uppercase tracking-widest text-white/80">
+              {cat.name} · {course.title}
+            </p>
+            <div className="mt-2 flex items-start gap-3.5">
+              <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20 text-white shadow-lg backdrop-blur-sm">
+                <MetaIcon className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <h1 className="font-display text-xl font-extrabold leading-tight text-white sm:text-2xl">
+                  {lesson.title}
+                </h1>
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-white/85">
+                  <span className="inline-flex items-center gap-1">
+                    <Clock className="h-3.5 w-3.5" /> {lesson.minutes} mnt
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <BookOpenCheck className="h-3.5 w-3.5" /> {meta.label}
+                  </span>
+                  <span>Materi {idx + 1} / {lessons.length}</span>
+                </div>
               </div>
-              <h1 className="mt-2 font-display text-xl font-extrabold text-slate-900 sm:text-2xl dark:text-white">
-                {lesson.title}
-              </h1>
             </div>
           </div>
-          <div className="mt-4">
-            <div className="mb-1.5 flex items-center justify-between text-xs font-bold">
-              <span className="text-slate-500 dark:text-slate-400">Progres kursus</span>
-              <span className="text-brand-600 dark:text-brand-400">{progress}%</span>
-            </div>
-            <ProgressBar value={progress} size="h-2.5" />
+        </div>
+        <div className="p-5 sm:p-6">
+          <div className="mb-1.5 flex items-center justify-between text-xs font-bold">
+            <span className="text-slate-500 dark:text-slate-400">Progres kursus</span>
+            <span className="text-brand-600 dark:text-brand-400">{progress}%</span>
           </div>
+          <ProgressBar value={progress} size="h-2.5" />
         </div>
       </div>
 
@@ -131,19 +141,19 @@ export default function LessonPage() {
               <ListChecks className="h-7 w-7" />
             </span>
             <h2 className="mt-4 font-display text-lg font-extrabold text-slate-900 dark:text-white">
-              Kuis Evaluasi {course.title}
+              Kuis Harian {course.title}
             </h2>
             <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-              Selesaikan semua materi sebelumnya, lalu buktikan pemahamanmu di sini.
+              5 soal pilihan ganda yang susunannya BERUBAH SETIAP HARI — besok kamu akan
+              mendapatkan set soal baru.
               {quiz && (
                 <>
                   {' '}
-                  Kuis berisi {quiz.questions.length} soal (pilihan ganda + essay) dan memberi
+                  Jawaban benar memberi
                   {' '}
                   <span className="font-extrabold text-amber-600 dark:text-amber-400">+{quizXpTotal(quiz)} XP</span>.
                 </>
               )}
-              Lulus kuis = progres kursus 100%.
             </p>
             {completedQuiz && (
               <p className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-extrabold text-green-700 dark:bg-green-500/15 dark:text-green-300">
@@ -183,6 +193,31 @@ export default function LessonPage() {
           </>
         )}
       </div>
+
+      {/* Tantangan praktikum harian — berubah sesuai level & hari */}
+      {lesson.type !== 'quiz' && (
+        <div className="card mt-5 overflow-hidden">
+          <div className="flex flex-wrap items-center gap-3 border-b border-slate-100 p-4 dark:border-white/5 sm:px-5">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-orange-400 to-rose-500 text-white shadow">
+              <Dumbbell className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-sm font-extrabold text-slate-900 dark:text-white">
+                Tantangan Praktikum Harian
+              </p>
+              <p className="text-[11px] font-semibold text-slate-400">
+                Perubahan tantangan setiap hari & setiap naik level
+              </p>
+            </div>
+            <span className="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-orange-600 dark:bg-orange-500/15 dark:text-orange-400">
+              Level {lv.level} · {BAND_LABEL[band]}
+            </span>
+          </div>
+          <p className="p-4 text-sm leading-relaxed text-slate-700 sm:p-5 dark:text-slate-200">
+            {challenge}
+          </p>
+        </div>
+      )}
 
       {/* Aksi */}
       <div className="card mt-5 p-4 sm:p-5">

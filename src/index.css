@@ -127,3 +127,182 @@ html[data-density='compact'] {
 *::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* =====================================================================
+   AMBIENT BACKGROUND — dot grid halus + blob melayang (clean, subtle)
+   ===================================================================== */
+.ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ambient-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(100, 116, 139, 0.16) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: linear-gradient(to bottom, black 20%, transparent 75%);
+  mask-image: linear-gradient(to bottom, black 20%, transparent 75%);
+}
+.dark .ambient-grid {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+}
+.ambient-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  opacity: 0.5;
+  animation: blob-drift 28s ease-in-out infinite alternate;
+}
+.ambient-blob.b1 {
+  width: 480px;
+  height: 480px;
+  left: -140px;
+  top: -160px;
+  background: var(--brand-400);
+}
+.ambient-blob.b2 {
+  width: 420px;
+  height: 420px;
+  right: -120px;
+  top: -80px;
+  background: #f97316;
+  animation-delay: -14s;
+  opacity: 0.35;
+}
+@keyframes blob-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(50px, -34px, 0) scale(1.14);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-blob {
+    animation: none;
+  }
+}
+
+/* =====================================================================
+   CONSOLE MODE — transformasi total ala PS4 / Nintendo Switch
+   (dinyalakan via data-console="on" di <html>)
+   ===================================================================== */
+[data-console='on'] body {
+  background: #04060f !important;
+}
+[data-console='on'] .ambient-grid {
+  background-image: linear-gradient(rgba(99, 102, 241, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.08) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 85%);
+  mask-image: linear-gradient(to bottom, black 30%, transparent 85%);
+}
+[data-console='on'] .ambient-blob.b1 {
+  background: #4338ca;
+  opacity: 0.55;
+}
+[data-console='on'] .ambient-blob.b2 {
+  background: #7c3aed;
+  opacity: 0.4;
+}
+[data-console='on'] .card {
+  border-radius: 26px;
+  border-color: rgba(99, 102, 241, 0.28);
+  background: rgba(10, 14, 28, 0.84);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.07), 0 22px 55px -22px rgba(59, 68, 229, 0.4);
+}
+[data-console='on'] .glass {
+  background: rgba(7, 10, 20, 0.86);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.8), 0 0 22px -8px rgba(99, 102, 241, 0.45);
+}
+[data-console='on'] .btn-primary {
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  box-shadow: 0 10px 26px -10px rgba(124, 58, 237, 0.85);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+[data-console='on'] .btn-ghost {
+  border-radius: 999px;
+  border-color: rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.62);
+  color: #e2e8f0;
+}
+[data-console='on'] .input-base {
+  background: rgba(10, 14, 28, 0.85);
+  border-color: rgba(99, 102, 241, 0.3);
+}
+[data-console='on'] .console-hide {
+  display: none !important;
+}
+
+/* Bottom bar (navigasi ala console) */
+.console-bar {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(7, 10, 20, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 20px 55px -14px rgba(0, 0, 0, 0.85), 0 0 26px -8px rgba(99, 102, 241, 0.5);
+  max-width: 96vw;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.console-bar::-webkit-scrollbar {
+  display: none;
+}
+.console-nav-item {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  color: #8b96ad;
+  transition: all 0.18s ease;
+}
+.console-nav-item:hover {
+  color: #fff;
+  background: rgba(99, 102, 241, 0.2);
+  transform: translateY(-3px);
+}
+.console-nav-item.active {
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  box-shadow: 0 8px 20px -8px rgba(124, 58, 237, 0.95);
+}
+.console-music-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: #8b96ad;
+  transition: all 0.18s ease;
+}
+.console-music-btn:hover {
+  color: #fff;
+  background: rgba(99, 102, 241, 0.2);
+}
+.console-music-label {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

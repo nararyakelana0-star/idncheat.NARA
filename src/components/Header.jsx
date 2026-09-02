@@ -23,6 +23,7 @@ import { CATEGORIES, TIERS } from '../data/curriculum'
 import { NOTIFICATIONS, NOTIF_ICONS } from '../data/mockData'
 import Logo from './Logo'
 import Ring from './ui/Ring'
+import Avatar from './ui/Avatar'
 
 /* =====================================================================
    Header — glassmorphism top bar
@@ -270,21 +271,14 @@ function ProfileMenu() {
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
-  const initials = (user.name || '?')
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-
   return (
     <div className="relative shrink-0" ref={ref}>
       <button onClick={() => setOpen((o) => !o)} className="group" aria-label="Menu profil">
-        <span
-          className={`grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br text-sm font-extrabold text-white ring-2 ring-white transition group-hover:ring-brand-300 dark:ring-slate-800 ${user.avatar || 'from-brand-500 to-violet-600'}`}
-        >
-          {initials}
-        </span>
+        <Avatar
+          user={user}
+          size="md"
+          className="ring-2 ring-white transition group-hover:ring-brand-300 dark:ring-slate-800"
+        />
         <span className="absolute -bottom-0.5 -right-0.5 grid h-4 w-4 place-items-center rounded-full bg-green-500 ring-2 ring-white dark:ring-slate-900">
           <span className="h-1.5 w-1.5 rounded-full bg-white" />
         </span>
@@ -293,11 +287,7 @@ function ProfileMenu() {
       {open && (
         <div className="glass absolute right-0 top-[calc(100%+8px)] z-50 w-64 animate-slide-up rounded-2xl p-2 shadow-glass">
           <div className="flex items-center gap-3 rounded-xl px-3 py-2.5">
-            <span
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br text-sm font-extrabold text-white ${user.avatar || 'from-brand-500 to-violet-600'}`}
-            >
-              {initials}
-            </span>
+            <Avatar user={user} size="md" />
             <div className="min-w-0">
               <p className="truncate text-sm font-bold text-slate-800 dark:text-slate-100">{user.name}</p>
               <p className="truncate text-[11px] text-slate-400">{user.email}</p>

@@ -268,9 +268,9 @@ export default function CourseDetailPage() {
                 <ListChecks className="h-5 w-5" />
               </span>
               <div>
-                <p className="font-display text-sm font-extrabold text-slate-900 dark:text-white">Kuis Evaluasi</p>
+                <p className="font-display text-sm font-extrabold text-slate-900 dark:text-white">Kuis Harian</p>
                 <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  {quiz ? `${quiz.questions.length} soal · PG + Essay` : 'Segera hadir'}
+                  5 soal pilihan ganda · berubah setiap hari
                 </p>
               </div>
             </div>

@@ -1,9 +1,10 @@
 import React from 'react'
-import { TrendingUp, Sparkles, ListChecks } from 'lucide-react'
-import { useApp } from '../../context/AppContext'
+import { TrendingUp, Sparkles, ListChecks, Gamepad2 } from 'lucide-react'
+import { useApp, levelInfo } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
 import { COURSES } from '../../data/curriculum'
 import { POPULAR_NOW } from '../../data/mockData'
+import { dailyAchievement } from '../../data/daily'
 import ContinueLearning from '../widgets/ContinueLearning'
 import CategoryGrid from '../widgets/CategoryGrid'
 import DailyTarget from '../widgets/DailyTarget'
@@ -41,6 +42,40 @@ function Greeting() {
         <ListChecks className="h-4 w-4 text-brand-500" />
         Kerjakan Kuis
       </button>
+    </div>
+  )
+}
+
+function DailyTrophy() {
+  const { state, setTheme } = useApp()
+  const lv = levelInfo(state.xp)
+  const a = dailyAchievement()
+  const consoleMode = !!state.theme.console
+  return (
+    <div className="card flex flex-wrap items-center gap-4 p-4 sm:p-5">
+      <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-2xl shadow-glow">
+        {a.icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-extrabold uppercase tracking-wider text-amber-500">
+          Trophy of the day · Rank {lv.rank}
+        </p>
+        <p className="font-display text-sm font-extrabold text-slate-900 dark:text-white">{a.name}</p>
+        <p className="text-xs leading-relaxed text-slate-500 dark:text-slate-400">{a.desc}</p>
+      </div>
+      {consoleMode ? (
+        <span className="hidden items-center gap-1.5 rounded-full bg-brand-500/15 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wide text-brand-600 sm:inline-flex dark:bg-brand-500/20 dark:text-brand-300">
+          <Gamepad2 className="h-3.5 w-3.5" /> Console Mode
+        </span>
+      ) : (
+        <button
+          onClick={() => setTheme({ console: true })}
+          className="btn-ghost hidden !px-3.5 !py-2 text-xs sm:inline-flex"
+          title="Nyalakan Console Mode — UI ala game console + musik chiptune"
+        >
+          <Gamepad2 className="h-4 w-4 text-brand-500" /> Console Mode
+        </button>
+      )}
     </div>
   )
 }
@@ -94,6 +129,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <Greeting />
+
+      <DailyTrophy />
 
       {/* Continue Learning + Target Harian */}
       <div className="grid gap-5 xl:grid-cols-3">

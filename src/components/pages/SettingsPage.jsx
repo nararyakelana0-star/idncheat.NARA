@@ -12,11 +12,16 @@ import {
   Monitor,
   Check,
   Camera,
+  Gamepad2,
+  Music2,
+  Volume2,
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth, AVATAR_GRADIENTS } from '../../context/AuthContext'
 import { TIERS } from '../../data/curriculum'
+import { MUSIC_TRACKS } from '../../audio/consoleMusic'
 import PageTitle from '../ui/PageTitle'
+import Avatar from '../ui/Avatar'
 
 /* =====================================================================
    Pengaturan — Tampilan (customizable UI) + Akun (customizable account)
@@ -61,6 +66,7 @@ export default function SettingsPage() {
     classRoom: user?.class || '',
     program: user?.program || 'Umum',
     avatar: user?.avatar || AVATAR_GRADIENTS[0],
+    avatarUrl: user?.avatarUrl || '',
     goal: state.daily.goal,
     showStreak: true,
     sound: true,
@@ -71,12 +77,34 @@ export default function SettingsPage() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
   const theme = state.theme
 
+  /* Upload foto profil: crop tengah → 96×96 JPEG (hemat localStorage) */
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const size = 96
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')
+      const s = Math.min(img.width, img.height)
+      ctx.drawImage(img, (img.width - s) / 2, (img.height - s) / 2, s, s, 0, 0, size, size)
+      set('avatarUrl', canvas.toDataURL('image/jpeg', 0.85))
+      URL.revokeObjectURL(url)
+    }
+    img.src = url
+    e.target.value = ''
+  }
+
   const saveProfile = () => {
     updateUser({
       name: form.name.trim() || user?.username,
       class: form.classRoom,
       program: form.program,
       avatar: form.avatar,
+      avatarUrl: form.avatarUrl,
       gamification: {
         ...user.gamification,
         daily: { ...user.gamification.daily, goal: form.goal },
@@ -191,6 +219,65 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* ============ CONSOLE MODE ============ */}
+        <section className="card p-5 sm:p-6">
+          <h3 className="flex items-center gap-2 font-display text-base font-bold text-slate-900 dark:text-white">
+            <Gamepad2 className="h-[18px] w-[18px] text-brand-500" /> Console Mode
+          </h3>
+          <p className="mt-1 text-xs leading-relaxed text-slate-400">
+            UI berubah total ala game console (PS4 / Nintendo Switch): dark neon, bottom bar,
+            plus musik chiptune yang bisa diganti.
+          </p>
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-200">Nyalakan Console Mode</p>
+              <p className="text-xs text-slate-400">Sidebar diganti bottom bar + tema neon</p>
+            </div>
+            <Toggle on={theme.console} onToggle={() => setTheme({ console: !theme.console })} label="Console Mode" />
+          </div>
+
+          <div className="mt-5">
+            <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
+              <Music2 className="h-3.5 w-3.5" /> Lagu console
+            </p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {MUSIC_TRACKS.map((t, i) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme({ track: i })}
+                  className={`rounded-xl border-2 px-3 py-2.5 text-left text-xs font-bold transition ${
+                    theme.track === i
+                      ? 'border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300'
+                      : 'border-slate-200 text-slate-500 hover:border-slate-300 dark:border-slate-700 dark:text-slate-400'
+                  }`}
+                >
+                  <Music2 className="mb-1 h-4 w-4" />
+                  {t.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="flex items-center gap-1.5 text-sm font-bold text-slate-700 dark:text-slate-200">
+                <Volume2 className="h-4 w-4 text-brand-500" /> Volume musik
+              </p>
+              <p className="text-xs text-slate-400">Berlaku saat Console Mode menyala</p>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={1}
+              step={0.05}
+              value={theme.volume}
+              onChange={(e) => setTheme({ volume: Number(e.target.value) })}
+              className="w-36 accent-brand-600"
+              aria-label="Volume musik"
+            />
+          </div>
+        </section>
+
         {/* ============ AKUN (CUSTOMIZABLE ACCOUNT) ============ */}
         <section className="card p-5 sm:p-6">
           <h3 className="flex items-center gap-2 font-display text-base font-bold text-slate-900 dark:text-white">
@@ -199,19 +286,24 @@ export default function SettingsPage() {
 
           {/* Avatar */}
           <div className="mt-4 flex flex-wrap items-center gap-4">
-            <span
-              className={`grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br text-xl font-extrabold text-white shadow ${form.avatar}`}
-            >
-              {(form.name || '?')
-                .split(' ')
-                .slice(0, 2)
-                .map((w) => w[0])
-                .join('')
-                .toUpperCase()}
-            </span>
+            <Avatar
+              user={{ ...(user || {}), avatarUrl: form.avatarUrl || undefined, name: form.name }}
+              size="lg"
+            />
             <div className="min-w-0">
+              <div className="mb-3 flex flex-wrap gap-2">
+                <label className="btn-ghost inline-flex cursor-pointer items-center gap-1.5 !px-3 !py-1.5 text-xs">
+                  <Camera className="h-3.5 w-3.5" /> Upload Foto
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                </label>
+                {form.avatarUrl && (
+                  <button onClick={() => set('avatarUrl', '')} className="btn-ghost !px-3 !py-1.5 text-xs">
+                    Hapus Foto
+                  </button>
+                )}
+              </div>
               <p className="mb-2 flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400">
-                <Camera className="h-3.5 w-3.5" /> Pilih warna avatar
+                <Palette className="h-3.5 w-3.5" /> Warna avatar <span className="font-semibold text-slate-400">(jika tanpa foto)</span>
               </p>
               <div className="flex flex-wrap gap-2">
                 {AVATAR_GRADIENTS.map((g) => (

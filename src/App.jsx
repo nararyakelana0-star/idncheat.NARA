@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { AppProvider, useApp } from './context/AppContext'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
+import ConsoleBar from './components/ConsoleBar'
 import Toasts from './components/Toasts'
 import AuthPage from './components/pages/AuthPage'
 import DashboardPage from './components/pages/DashboardPage'
@@ -51,11 +52,18 @@ function PageRouter() {
 
 function Shell() {
   const { state } = useApp()
+  const consoleMode = !!state.theme.console
   return (
     <div className="min-h-screen">
+      {/* Latar ambient halus (dot grid + blob) */}
+      <div className="ambient-bg" aria-hidden="true">
+        <div className="ambient-grid" />
+        <div className="ambient-blob b1" />
+        <div className="ambient-blob b2" />
+      </div>
       <Header />
-      <Sidebar />
-      <main className="relative pt-[76px] lg:pl-64">
+      {consoleMode ? null : <Sidebar />}
+      <main className={`relative pt-[76px] ${consoleMode ? 'pb-36' : 'lg:pl-64'}`}>
         {/* dekorasi latar radial halus */}
         <div
           aria-hidden="true"
@@ -63,11 +71,14 @@ function Shell() {
         />
         <div
           key={`${state.page.name}-${JSON.stringify(state.page.payload)}`}
-          className="relative mx-auto w-full max-w-7xl animate-slide-up px-4 py-6 sm:px-6 lg:px-8"
+          className={`relative mx-auto w-full max-w-7xl animate-slide-up px-4 py-6 sm:px-6 lg:px-8 ${
+            consoleMode ? 'max-w-6xl' : ''
+          }`}
         >
           <PageRouter />
         </div>
       </main>
+      {consoleMode && <ConsoleBar />}
       <Toasts />
     </div>
   )

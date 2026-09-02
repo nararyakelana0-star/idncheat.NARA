@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
 import { createContext, useContext } from 'react'
 import { useAuth } from './AuthContext'
+import { consoleMusic } from '../audio/consoleMusic'
 
 /* =====================================================================
    AppContext — state global IDNcheat
@@ -18,7 +19,7 @@ function loadTheme() {
   } catch {
     /* abaikan */
   }
-  return { mode: 'light', accent: 'indigo', density: 'comfortable' }
+  return { mode: 'light', accent: 'indigo', density: 'comfortable', console: false, track: 0, volume: 0.5 }
 }
 
 const initialState = {
@@ -101,14 +102,28 @@ export function AppProvider({ children }) {
   const seq = useRef(1)
   const { user, updateUser } = useAuth()
 
-  /* Terapkan tema ke <html> (class dark / data-accent / data-density) */
+  /* Terapkan tema ke <html> (class dark / data-accent / data-density / data-console) */
   useEffect(() => {
     const root = document.documentElement
     root.classList.toggle('dark', state.theme.mode === 'dark')
     root.dataset.accent = state.theme.accent
     root.dataset.density = state.theme.density
+    root.dataset.console = state.theme.console ? 'on' : 'off'
     localStorage.setItem('idncheat_theme', JSON.stringify(state.theme))
   }, [state.theme])
+
+  /* Console Mode: mulai/hentikan musik chiptune + resume via gesture pertama */
+  useEffect(() => {
+    if (state.theme.console) {
+      consoleMusic.setVolume(state.theme.volume)
+      consoleMusic.start(state.theme.track, state.theme.volume)
+      const resume = () => consoleMusic.start(state.theme.track, state.theme.volume)
+      window.addEventListener('pointerdown', resume, { once: true })
+      return () => window.removeEventListener('pointerdown', resume)
+    }
+    consoleMusic.stop()
+    return undefined
+  }, [state.theme.console, state.theme.track, state.theme.volume])
 
   /* Hidrasi gamifikasi saat login (per-akun) */
   useEffect(() => {

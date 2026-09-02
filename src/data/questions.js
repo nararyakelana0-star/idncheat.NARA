@@ -1707,6 +1707,224 @@ export const QUIZZES = {
       },
     ],
   },
+
+  /* ---------- KURSUS BARU: MICROBIT · TINY-BIT · ETHICAL HACKING ---------- */
+  microbit: {
+    title: 'Kuis Evaluasi: Micro:bit',
+    questions: [
+      {
+        id: 'micro-1',
+        type: 'mc',
+        prompt: 'Papan LED pada micro:bit berjumlah…',
+        options: ['16 LED (4×4)', '25 LED (5×5)', '36 LED (6×6)', '49 LED (7×7)'],
+        correctIndex: 1,
+        hint: 'Hitung kotaknya: 5 baris × 5 kolom.',
+        steps: [
+          { title: 'Struktur', text: 'LED matrix micro:bit = 5 kolom × 5 baris = 25 LED, bisa menampilkan angka, huruf, dan ikon.' },
+          { title: 'Penggunaan', text: 'Panggil show icon / show letter / show number — seluruh matrix menyala sesuai pola.' },
+        ],
+      },
+      {
+        id: 'micro-2',
+        type: 'mc',
+        prompt: 'Di editor MakeCode, micro:bit diprogram dengan…',
+        options: ['Kode C langsung', 'Blok visual (drag & drop)', 'Spreadsheet', 'BahasaAssembly'],
+        correctIndex: 1,
+        hint: 'Seperti Scratch — menyusun blok, bukan mengetik baris kode.',
+        steps: [
+          { title: 'Blok visual', text: 'MakeCode memakai blok yang bisa diseret — logika sama dengan coding, lebih ramah pemula.' },
+          { title: 'Opsi lanjut', text: 'Bisa juga JavaScript/Python — untuk yang sudah siap naik level.' },
+        ],
+      },
+      {
+        id: 'micro-3',
+        type: 'mc',
+        prompt: 'Sensor yang mendeteksi posisi kemiringan/gerak micro:bit adalah…',
+        options: ['Sensor suhu', 'Akselerometer', 'Sensor cahaya', 'Sensor kompas'],
+        correctIndex: 1,
+        hint: 'Sensor ini yang membuat game "gebedar" bisa jalan.',
+        steps: [
+          { title: 'Akselerometer', text: 'Mengukur percepatan 3 sumbu (x, y, z) — mendeteksi goyangan & kemiringan.' },
+          { title: 'Aplikasi', text: 'Game gebedar: "when device tilted left → move left".' },
+        ],
+      },
+      {
+        id: 'micro-4',
+        type: 'mc',
+        prompt: 'Untuk menanggapi pencetannya, tombol A micro:bit memakai blok…',
+        options: ['when button A pressed', 'when on edge', 'when temperature', 'forever'],
+        correctIndex: 0,
+        hint: 'Event-nya: "when button A pressed".',
+        steps: [
+          { title: 'Event input', text: 'Blok "when button A pressed" memicu kode saat tombol ditekan — dasar interaktif.' },
+          { title: 'Variasi', text: 'Ada juga "when button A released" dan "when A and B pressed".' },
+        ],
+      },
+      {
+        id: 'micro-5',
+        type: 'mc',
+        prompt: 'Perintah untuk menampilkan ikon wajah gembira di LED matrix adalah…',
+        options: ['show icon: happy', 'print "happy"', 'draw smile', 'led.on(25)'],
+        correctIndex: 0,
+        hint: 'MakeCode punya galeri ikon bawaan: hati, wajah, panah, dsb.',
+        steps: [
+          { title: 'Galeri ikon', text: 'Menu show → pilih ikon (happy, sad, heart, arrow...) — langsung tampil di matrix.' },
+          { title: 'Animasi', text: 'Gabungkan dengan delay → jadi animasi (misal mata berkedip).' },
+        ],
+      },
+      {
+        id: 'micro-6',
+        type: 'essay',
+        prompt: 'Jelaskan langkah memprogram micro:bit agar menampilkan ikon "wajah gembira" saat tombol A ditekan! Sebutkan blok-blok yang dipakai.',
+        answerKey: 'Langkah: (1) Buka MakeCode, (2) tambahkan blok event "when button A pressed", (3) di dalamnya pasang blok "show icon: happy", (4) (opsional) tambahkan delay atau animasi, (5) unduh/kirim ke micro:bit via USB atau Bluetooth. Blok inti: when button A pressed → show icon.',
+        aiFeedback: 'Urutanmu sudah benar! Agar lebih lengkap: sebutkan cara transfer ke perangkat (USB atau Bluetooth) dan tambahkan satu ide pengembangan — misalnya ikon berbeda untuk tombol B. Itu menunjukkan kamu berpikir seperti engineer.',
+      },
+    ],
+  },
+  tinybit: {
+    title: 'Kuis Evaluasi: Tiny-Bit (Elektronik Dasar)',
+    questions: [
+      {
+        id: 'tiny-1',
+        type: 'mc',
+        prompt: 'Rangkaian listrik yang membuat lampu menyala harus…',
+        options: ['Tersambung ke TV', 'Tercium aromanya', 'Terbentuk jalur tertutup dari baterai ke lampu', 'Terisi air'],
+        correctIndex: 2,
+        hint: 'Arus hanya mengalir saat jalurnya "tutup" (loop penuh).',
+        steps: [
+          { title: 'Loop tertutup', text: 'Arus mengalir mengelilingi loop: kutub + baterai → kabel → lampu → kabel → kutub − baterai.' },
+          { title: 'Rangkaian terbuka', text: 'Kalau ada putus (switch off), loop terbuka → arus berhenti → lampu padam.' },
+        ],
+      },
+      {
+        id: 'tiny-2',
+        type: 'mc',
+        prompt: 'Komponen yang berfungsi sebagai "gerbang" untuk membuka-menutup aliran arus adalah…',
+        options: ['Baterai', 'Lampu', 'Switch (saklar)', 'Resistor'],
+        correctIndex: 2,
+        hint: 'Klik — nyala. Klik — padam. Itu dia.',
+        steps: [
+          { title: 'Switch', text: 'Saklar memutus/menyambung loop — kontrol paling dasar dalam elektronik.' },
+          { title: 'Jenis', text: 'Push button (tekan), toggle (geser), dan reed switch (magnet).' },
+        ],
+      },
+      {
+        id: 'tiny-3',
+        type: 'mc',
+        prompt: 'Resistor dalam rangkaian LED berfungsi untuk…',
+        options: ['Meningkatkan tegangan', 'Membatasi arus agar LED tidak cepat rusak', 'Menyimpan listrik', 'Menyambungkan kabel'],
+        correctIndex: 1,
+        hint: 'Tanpa resistor, LED bisa "meledak" karena arus berlebih.',
+        steps: [
+          { title: 'Pelindung', text: 'LED butuh arus kecil (±10–20 mA). Resistor membatasi arus sesuai kebutuhan.' },
+          { title: 'Perhitungan', text: 'R = (V sumber − V LED) ÷ arus. Contoh: (3V − 2V) ÷ 0,02A = 50 Ω.' },
+        ],
+      },
+      {
+        id: 'tiny-4',
+        type: 'mc',
+        prompt: 'Breadboard adalah…',
+        options: ['Alat untuk memanggang PCB', 'Papan untuk merangkai rangkaian tanpa solder', 'Jenis baterai', 'Kabel khusus'],
+        correctIndex: 1,
+        hint: 'Tambal ("bread") + papan ("board") — tempat merakit cepat.',
+        steps: [
+          { title: 'Fungsi', text: 'Pin di dalam breadboard tersambung otomatis — komponen cukup ditancap, langsung terhubung.' },
+          { title: 'Aturan', text: 'Baris tengah (a–e / f–j) tersambung per baris; kolom luar (1, 2, …) tersambung vertikal — biasanya untuk power rail.' },
+        ],
+      },
+      {
+        id: 'tiny-5',
+        type: 'mc',
+        prompt: 'Jika LED ditancapkan dengan kutub terbalik (polaritas salah), maka…',
+        options: ['LED akan menyala lebih terang', 'LED tidak menyala', 'LED berubah warna', 'Baterai meledak'],
+        correctIndex: 1,
+        hint: 'LED hanya mengalirkan arus satu arah (dioda).',
+        steps: [
+          { title: 'Dioda', text: 'LED = dioda — arus hanya mengalir dari anoda (+) ke katoda (−).' },
+          { title: 'Praktik', text: 'Kaki panjang = anoda (+), kaki pendek = katoda (−). Terbalik? Ganti saja posisinya.' },
+        ],
+      },
+      {
+        id: 'tiny-6',
+        type: 'essay',
+        prompt: 'Jelaskan langkah membuat rangkaian lampu senter sederhana dari baterai, lampu LED, resistor, dan switch!',
+        answerKey: 'Langkah: (1) Susun loop: kutub + baterai → switch → resistor → LED (anoda+) → kutub − baterai, (2) tancap semua di breadboard mengikuti baris sambungan, (3) pasang resistor antara switch dan LED untuk membatasi arus, (4) uji: switch ON → LED menyala; OFF → padam. Kesalahan umum: LED terbalik atau loop belum tertutup.',
+        aiFeedback: 'Sudah menjelaskan loop-nya! Agar sempurna: sebutkan peran resistor (membatasi arus) dan cara cek polaritas LED (kaki panjang = +). Tambahkan: apa yang terjadi jika switch dihilangkan?',
+      },
+    ],
+  },
+  'ethical-hacking': {
+    title: 'Kuis Evaluasi: Ethical Hacking',
+    questions: [
+      {
+        id: 'eth-1',
+        type: 'mc',
+        prompt: 'Fase PERTAMA dalam metodologi penetration testing adalah…',
+        options: ['Exploitation', 'Reporting', 'Reconnaissance (pengumpulan informasi)', 'Scanning'],
+        correctIndex: 2,
+        hint: 'Sebelum "menyatroni", pahami dulu denah rumahnya.',
+        steps: [
+          { title: 'Recon', text: 'Kumpulkan informasi target: domain, subdomain, email, teknologi yang dipakai (OSINT).' },
+          { title: 'Alasan', text: 'Semakin lengkap "peta" target, semakin efisien fase berikutnya — dan semakin kecil risiko merusak.' },
+        ],
+      },
+      {
+        id: 'eth-2',
+        type: 'mc',
+        prompt: 'Alat yang paling umum dipakai untuk memetakan port terbuka & service target adalah…',
+        options: ['Photoshop', 'Nmap', 'Excel', 'VLC'],
+        correctIndex: 1,
+        hint: 'Awalannya "n" dari network… map!',
+        steps: [
+          { title: 'Nmap', text: 'Memindai port terbuka, mendeteksi versi service, dan menaksir OS target.' },
+          { title: 'Pola', text: 'nmap -sV target → daftar port + service + versi. Langkah wajib sebelum eksploitasi.' },
+        ],
+      },
+      {
+        id: 'eth-3',
+        type: 'mc',
+        prompt: 'Dalam OWASP Top 10, kategori kerentanan web yang paling sering ditemukan adalah…',
+        options: ['Broken access control', 'Injection (misal SQL injection)', 'Outdated browser', 'Password pendek'],
+        correctIndex: 1,
+        hint: 'Membuat "injeksi" ke input yang tidak disanitasi.',
+        steps: [
+          { title: 'Injection', text: 'Pelaku menyisipkan kode jahat ke input (SQL, OS, LDAP) yang tidak difilter aplikasi.' },
+          { title: 'Contoh', text: 'Input login: \' OR 1=1 -- → bisa mem-bypass autentikasi bila tak diprotes.' },
+        ],
+      },
+      {
+        id: 'eth-4',
+        type: 'mc',
+        prompt: 'Peran Burp Suite (proxy) dalam pengujian web adalah…',
+        options: ['Menampilkan gambar target', 'Menangkap & memodifikasi trafik HTTP antara browser dan server', 'Menghapus log server', 'Mempercepat website'],
+        correctIndex: 1,
+        hint: 'Berada "di tengah" — menangkap semua paket yang lewat.',
+        steps: [
+          { title: 'Proxy intercept', text: 'Burp berada di tengah: menangkap setiap request/response, bisa diubah sebelum diteruskan.' },
+          { title: 'Manfaat', text: 'Uji modifikasi parameter, header, dan cookie — dasar pengujian keamanan web.' },
+        ],
+      },
+      {
+        id: 'eth-5',
+        type: 'mc',
+        prompt: 'Sebelum menguji keamanan sebuah sistem, yang PALING PENTING dimiliki ethical hacker adalah…',
+        options: ['Komputer paling mahal', 'Izin tertulis & ruang lingkup (scope) dari pemilik', 'Jaringan WiFi target', 'Email pribadi target'],
+        correctIndex: 1,
+        hint: 'Tanpa izin = kriminal, seprofesional apa pun teknikmu.',
+        steps: [
+          { title: 'Legalitas', text: 'Pentest sah = izin tertulis + scope jelas (sistem apa, teknik apa, waktu kapan).' },
+          { title: 'Konsekuensi', text: 'Tanpa izin, akses sistem orang lain adalah pidana (UU ITE di Indonesia).' },
+        ],
+      },
+      {
+        id: 'eth-6',
+        type: 'essay',
+        prompt: 'Jelaskan 4 fase penetration testing dan peran laporan (report) di dalamnya!',
+        answerKey: '4 fase: (1) Reconnaissance — pengumpulan informasi target (OSINT), (2) Scanning — memetakan port, service, dan celah (Nmap, vulnerability scanner), (3) Exploitation — memanfaatkan celah untuk membuktikan akses (dengan hati-hati & sesuai scope), (4) Reporting — mendokumentasikan temuan, tingkat risiko, bukti, dan rekomendasi perbaikan. Laporan adalah "produk akhir" pentest: tanpa laporan, temuan tidak bisa ditindaklanjuti oleh pemilik sistem.',
+        aiFeedback: 'Keempat fasenya sudah disebut! Perkuat bagian reporting: sebutkan 3 isi laporan yang baik (temuan + bukti, tingkat risiko, rekomendasi). Tambahkan juga: mengapa pentester harus "berhenti" setelah proof-of-concept.',
+      },
+    ],
+  },
 }
 
 export const quizForCourse = (courseId) => QUIZZES[courseId]

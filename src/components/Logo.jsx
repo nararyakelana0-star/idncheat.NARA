@@ -20,7 +20,7 @@ export default function Logo({ size = 'md', onClick, showWord = true }) {
     >
       <svg
         viewBox="0 0 48 48"
-        className="shrink-0 drop-shadow-sm transition-transform group-hover:scale-105"
+        className="shrink-0 drop-shadow-sm transition-transform group-hover:scale-105 dark:drop-shadow-[0_0_10px_rgba(129,140,248,0.55)] dark:brightness-110 dark:saturate-150"
         style={{ width: markSize, height: markSize }}
         role="img"
         aria-hidden="true"
@@ -48,7 +48,7 @@ export default function Logo({ size = 'md', onClick, showWord = true }) {
 
       {showWord && (
         <span className={`font-display font-extrabold tracking-tight ${textSize}`}>
-          <span className="relative inline-block text-slate-900">
+          <span className="relative inline-block text-slate-900 dark:text-white">
             <span className="absolute inset-0 -translate-x-[1.5px] select-none text-cyan-500/40 blur-[0.4px]" aria-hidden="true">
               IDN
             </span>
@@ -57,7 +57,7 @@ export default function Logo({ size = 'md', onClick, showWord = true }) {
             </span>
             <span className="relative">IDN</span>
           </span>
-          <span className="text-brand-500">cheat</span>
+          <span className="text-brand-500 dark:text-brand-400">cheat</span>
         </span>
       )}
     </button>
