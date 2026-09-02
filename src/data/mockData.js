@@ -56,31 +56,6 @@ export const NOTIFICATIONS = [
   },
 ]
 
-const BASE = [
-  { name: 'Fakhri Ramadhan', prog: 'XII RPL', xp: 640, streak: 21 },
-  { name: 'Nadia Salsabila', prog: 'XI TJKT', xp: 585, streak: 17 },
-  { name: 'Budi Santoso', prog: 'XII RPL', xp: 320, streak: 12, you: true },
-  { name: 'Bilal Hasan', prog: 'X TKJ', xp: 295, streak: 9 },
-  { name: 'Zahra Azzahra', prog: 'XII DKV', xp: 260, streak: 14 },
-  { name: 'Rayhan Pratama', prog: 'XI RPL', xp: 240, streak: 8 },
-  { name: 'Qanita Fathia', prog: 'XII Diniyah', xp: 210, streak: 11 },
-  { name: 'Dafa Maulana', prog: 'XI TJKT', xp: 185, streak: 6 },
-  { name: 'Hana Al-Farabi', prog: 'X RPL', xp: 150, streak: 5 },
-  { name: 'Mikha Aulia', prog: 'XII Diniyah', xp: 120, streak: 7 },
-]
-
-const withRank = (rows) =>
-  rows
-    .slice()
-    .sort((a, b) => b.xp - a.xp)
-    .map((r, i) => ({ ...r, rank: i + 1 }))
-
-export const LEADERBOARD = {
-  mingguan: withRank(BASE),
-  bulanan: withRank(BASE.map((r, i) => ({ ...r, xp: r.xp * 6 + i * 37 }))),
-  semua: withRank(BASE.map((r) => ({ ...r, xp: r.xp * 34 + r.streak * 12 }))),
-}
-
 export const AVATAR_GRADIENTS = [
   'from-rose-400 to-pink-600',
   'from-amber-400 to-orange-500',

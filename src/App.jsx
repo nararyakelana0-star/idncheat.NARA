@@ -16,6 +16,7 @@ import LessonPage from './components/pages/LessonPage'
 import QuizPage from './components/pages/QuizPage'
 import MyCoursesPage from './components/pages/MyCoursesPage'
 import QuizzesPage from './components/pages/QuizzesPage'
+import ChatPage from './components/pages/ChatPage'
 import LeaderboardPage from './components/pages/LeaderboardPage'
 import AchievementsPage from './components/pages/AchievementsPage'
 import SettingsPage from './components/pages/SettingsPage'
@@ -59,6 +60,8 @@ function PageRouter() {
       return <MyCoursesPage />
     case 'quizzes':
       return <QuizzesPage />
+    case 'chat':
+      return <ChatPage />
     case 'leaderboard':
       return <LeaderboardPage />
     case 'achievements':

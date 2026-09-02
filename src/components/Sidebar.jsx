@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Home,
   BookOpen,
   ListChecks,
+  MessageCircle,
   Trophy,
   Medal,
   Settings,
@@ -14,6 +15,7 @@ import { useApp, levelInfo } from '../context/AppContext'
 import { useAuth } from '../context/AuthContext'
 import { CATEGORIES, COURSES } from '../data/curriculum'
 import { QUIZZES } from '../data/questions'
+import { chatStore } from '../lib/chatStore'
 import Ring from './ui/Ring'
 
 /* =====================================================================
@@ -25,6 +27,7 @@ const NAV = [
   { key: 'dashboard', label: 'Dashboard', icon: Home },
   { key: 'mycourses', label: 'Kursus Saya', icon: BookOpen },
   { key: 'quizzes', label: 'Kuis & Evaluasi', icon: ListChecks },
+  { key: 'chat', label: 'Chat', icon: MessageCircle },
   { key: 'leaderboard', label: 'Papan Peringkat', icon: Trophy },
   { key: 'achievements', label: 'Pencapaian', icon: Medal },
   { key: 'settings', label: 'Pengaturan', icon: Settings },
@@ -34,6 +37,20 @@ function SidebarContent() {
   const { state, dispatch, navigate } = useApp()
   const { user } = useAuth()
   const lv = levelInfo(state.xp)
+  const [chatUnread, setChatUnread] = useState(0)
+  const [chatOnline, setChatOnline] = useState(0)
+
+  /* Badge unread chat */
+  useEffect(() => {
+    return chatStore.subscribe((s) => {
+      setChatUnread(s.unread)
+      setChatOnline(s.online.length)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (state.page.name === 'chat') chatStore.clearUnread()
+  }, [state.page.name])
 
   const quizCount = COURSES.filter((c) => c.tiers.includes(state.tier) && QUIZZES[c.id]).length
   const enrolledCount = Object.entries(state.courseProgress).filter(
@@ -49,7 +66,8 @@ function SidebarContent() {
         </p>
         {NAV.map(({ key, label, icon: Icon }) => {
           const active = state.page.name === key
-          const badge = key === 'quizzes' ? quizCount : key === 'mycourses' ? enrolledCount : null
+          const badge =
+            key === 'quizzes' ? quizCount : key === 'mycourses' ? enrolledCount : key === 'chat' ? chatUnread || chatOnline || null : null
           return (
             <button
               key={key}

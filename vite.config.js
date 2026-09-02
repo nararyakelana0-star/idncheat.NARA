@@ -10,6 +10,10 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
     allowedHosts: true,
+    proxy: {
+      // Server chat real-time (WebSocket) → port 3001
+      '/ws': { target: 'ws://localhost:3001', ws: true },
+    },
   },
   build: {
     outDir: 'dist',
