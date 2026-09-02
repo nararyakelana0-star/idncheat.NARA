@@ -83,6 +83,27 @@ export function AuthProvider({ children }) {
     saveUsers(next)
   }, [])
 
+  /* Sinkron user ke server IDNcheat (roster leaderboard) — silent, non-blocking */
+  const syncToServer = useCallback((u) => {
+    if (!u) return
+    try {
+      fetch('/api/users/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: u.username,
+          name: u.name,
+          class: u.class,
+          xp: u.gamification?.xp ?? 0,
+          streak: u.gamification?.streak ?? 0,
+          avatarUrl: u.avatarUrl || '',
+        }),
+      }).catch(() => {})
+    } catch {
+      /* abaikan — server mungkin belum siap */
+    }
+  }, [])
+
   /* ---- LOGIN: via username ATAU email + password ---- */
   const login = useCallback(
     (identifier, password) => {
@@ -94,9 +115,10 @@ export function AuthProvider({ children }) {
       if (found.password !== password) return { ok: false, error: 'Password salah. Coba lagi.' }
       localStorage.setItem(SESSION_KEY, found.username)
       setUser(found)
+      syncToServer(found)
       return { ok: true }
     },
-    [users]
+    [users, syncToServer]
   )
 
   /* ---- SIGN UP ---- */
@@ -123,6 +145,7 @@ export function AuthProvider({ children }) {
       persist(next)
       localStorage.setItem(SESSION_KEY, newUser.username)
       setUser(newUser)
+      syncToServer(newUser)
       return { ok: true }
     },
     [users, persist]

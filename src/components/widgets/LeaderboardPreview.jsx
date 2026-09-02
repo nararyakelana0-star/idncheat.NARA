@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Trophy, Crown, ArrowRight, Users } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { useAuth } from '../../context/AuthContext'
@@ -12,7 +12,31 @@ import Avatar from '../ui/Avatar'
 export default function LeaderboardPreview() {
   const { navigate } = useApp()
   const { user, users } = useAuth()
-  const top5 = buildLeaderboard(users, user?.username).slice(0, 5)
+  const [serverRows, setServerRows] = useState(null)
+  const [live, setLive] = useState(false)
+
+  useEffect(() => {
+    let on = true
+    const load = () => {
+      fetch('/api/users')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!on || !d?.users) return
+          setServerRows(d.users)
+          setLive(true)
+        })
+        .catch(() => {})
+    }
+    load()
+    const iv = setInterval(load, 30000)
+    return () => {
+      on = false
+      clearInterval(iv)
+    }
+  }, [])
+
+  const source = live && serverRows && serverRows.length ? serverRows : users
+  const top5 = buildLeaderboard(source, user?.username).slice(0, 5)
 
   return (
     <div className="card flex h-full flex-col p-5">

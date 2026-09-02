@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Send, Wifi, WifiOff, Users, MessageCircle, UserPlus } from 'lucide-react'
-import { useApp } from '../../context/AppContext'
+import { Send, Wifi, WifiOff, Users, MessageCircle, Radio } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { levelInfo } from '../../context/AppContext'
+import { chatClient } from '../../lib/chatClient'
 import { chatStore } from '../../lib/chatStore'
 import PageTitle from '../ui/PageTitle'
 import Avatar from '../ui/Avatar'
 
 /* =====================================================================
-   Chat — ruang obrolan real-time antar user IDNcheat (WebSocket)
-   Online, presence, typing, auto-reconnect.
+   Chat — ruang obrolan real-time antar user IDNcheat.
+   Transport ditangani chatClient (WS + fallback polling), jadi user
+   tetap online di semua halaman selama app terbuka.
    ===================================================================== */
 
 function fmtTime(ts) {
@@ -18,134 +18,58 @@ function fmtTime(ts) {
 
 export default function ChatPage() {
   const { user } = useAuth()
-  const { state } = useApp()
-  const consoleMode = !!state.theme.console
-  const [connected, setConnected] = useState(false)
-  const [online, setOnline] = useState([])
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState(chatClient.getMessages())
+  const [online, setOnline] = useState(chatClient.getOnline())
+  const [conn, setConn] = useState({ connected: chatClient.getMode() !== 'idle', mode: chatClient.getMode() })
   const [text, setText] = useState('')
-  const [typing, setTyping] = useState(null) // {name, on}
-  const wsRef = useRef(null)
-  const retryRef = useRef(0)
+  const [typing, setTyping] = useState(null)
   const bottomRef = useRef(null)
   const typingTimer = useRef(null)
-  const mountedRef = useRef(true)
-
-  const lv = levelInfo(state.xp)
 
   useEffect(() => {
-    mountedRef.current = true
-    let ws
-    let closed = false
-
-    const connect = () => {
-      if (closed) return
-      const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      ws = new WebSocket(`${proto}://${window.location.host}/ws`)
-      wsRef.current = ws
-
-      ws.onopen = () => {
-        retryRef.current = 0
-        ws.send(
-          JSON.stringify({
-            type: 'join',
-            user: {
-              username: user?.username,
-              name: user?.name,
-              class: user?.class,
-              avatarUrl: user?.avatarUrl || '',
-              level: lv.level,
-            },
-          })
-        )
+    const u1 = chatClient.subscribe('message', ({ all, own }) => {
+      setMessages([...all])
+      if (!own) {
+        setTyping(null)
+        chatStore.clearUnread() // sedang di halaman chat → tak perlu badge
       }
-
-      ws.onmessage = (ev) => {
-        if (!mountedRef.current) return
-        let msg
-        try {
-          msg = JSON.parse(ev.data)
-        } catch {
-          return
-        }
-        if (msg.type === 'hello') {
-          setConnected(true)
-          setOnline(msg.online)
-          setMessages(msg.history || [])
-        } else if (msg.type === 'presence') {
-          setOnline(msg.online)
-        } else if (msg.type === 'chat') {
-          setMessages((m) => [...m, msg].slice(-200))
-          if (msg.from?.username !== user?.username) {
-            chatStore.addUnread()
-            if (window.location.hash !== '#chat') chatStore.addMessage()
-          }
-          setTyping(null)
-        } else if (msg.type === 'typing') {
-          if (msg.on) setTyping(msg.from)
-          else setTyping(null)
-        }
-      }
-
-      ws.onclose = () => {
-        if (!mountedRef.current) return
-        setConnected(false)
-        chatStore.setConnected(false)
-        // auto-reconnect (backoff: 1s, 2s, 4s, maks 10s)
-        const delay = Math.min(10000, 1000 * 2 ** retryRef.current)
-        retryRef.current += 1
-        setTimeout(connect, delay)
-      }
-
-      ws.onerror = () => ws.close()
-    }
-
-    connect()
+    })
+    const u2 = chatClient.subscribe('presence', setOnline)
+    const u3 = chatClient.subscribe('status', setConn)
+    const u4 = chatClient.subscribe('typing', (t) => {
+      if (t.on) setTyping(t.from)
+      else setTyping(null)
+    })
+    chatStore.clearUnread()
     return () => {
-      closed = true
-      mountedRef.current = false
-      chatStore.setConnected(false)
-      try {
-        ws?.close()
-      } catch {
-        /* abaikan */
-      }
+      u1()
+      u2()
+      u3()
+      u4()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.username])
+  }, [])
 
-  /* scroll ke bawah saat pesan baru */
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [messages, typing])
 
   const send = () => {
     const t = text.trim()
-    if (!t || !wsRef.current || wsRef.current.readyState !== 1) return
-    wsRef.current.send(JSON.stringify({ type: 'chat', text: t }))
-    setMessages((m) => [
-      ...m,
-      { type: 'chat', from: { username: user?.username, name: user?.name, avatarUrl: user?.avatarUrl }, text: t, ts: Date.now() },
-    ])
+    if (!t) return
+    chatClient.send(t)
     setText('')
     setTyping(null)
-    clearTimeout(typingTimer.current)
-    wsRef.current.send(JSON.stringify({ type: 'typing', on: false }))
+    chatClient.typing(false)
   }
 
   const onType = (v) => {
     setText(v)
-    if (wsRef.current?.readyState === 1) {
-      wsRef.current.send(JSON.stringify({ type: 'typing', on: true }))
-      clearTimeout(typingTimer.current)
-      typingTimer.current = setTimeout(() => {
-        wsRef.current?.send(JSON.stringify({ type: 'typing', on: false }))
-      }, 1500)
-    }
+    chatClient.typing(true)
+    clearTimeout(typingTimer.current)
+    typingTimer.current = setTimeout(() => chatClient.typing(false), 1500)
   }
 
   const others = online.filter((o) => o.username !== user?.username)
-  const meOnline = online.some((o) => o.username === user?.username)
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -159,13 +83,13 @@ export default function ChatPage() {
       <div className="card mb-4 flex flex-wrap items-center gap-3 p-3.5 sm:p-4">
         <span
           className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-extrabold ${
-            connected
+            conn.connected
               ? 'bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-400'
               : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
           }`}
         >
-          {connected ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
-          {connected ? 'Terhubung' : 'Terhubung ulang…'}
+          {conn.connected ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
+          {conn.connected ? (conn.mode === 'ws' ? 'Real-time (WebSocket)' : 'Real-time (polling)') : 'Terhubung ulang…'}
         </span>
         <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
           <Users className="h-3.5 w-3.5" /> {online.length} online
@@ -189,7 +113,7 @@ export default function ChatPage() {
 
       {/* Kolom chat */}
       <div className="card flex h-[58vh] min-h-[380px] flex-col overflow-hidden">
-        <div className={`flex-1 space-y-3 overflow-y-auto p-4 ${consoleMode ? 'bg-transparent' : 'bg-slate-50/60 dark:bg-slate-950/30'}`}>
+        <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {messages.length === 0 ? (
             <div className="grid h-full place-items-center text-center">
               <div>
@@ -202,7 +126,7 @@ export default function ChatPage() {
                 <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-slate-400">
                   {others.length > 0
                     ? `Ada ${others.length} orang lain online — sapa mereka dulu!`
-                    : 'Jadilah yang pertama ngobrol. Ajak temanmu login ke IDNcheat untuk mulai chat.'}
+                    : 'Jadilah yang pertama ngobrol. Ajak temanmu login ke IDNcheat dari browser dia — dia akan langsung muncul di sini.'}
                 </p>
               </div>
             </div>
@@ -262,20 +186,21 @@ export default function ChatPage() {
           />
           <button
             onClick={send}
-            disabled={!text.trim() || !connected}
+            disabled={!text.trim() || !conn.connected}
             className="btn-primary grid h-11 w-11 shrink-0 place-items-center !rounded-full !p-0 disabled:opacity-50"
             aria-label="Kirim"
+            title={conn.connected ? 'Kirim' : 'Menunggu koneksi…'}
           >
             <Send className="h-[18px] w-[18px]" />
           </button>
+          {!conn.connected && (
+            <span className="hidden text-[10px] font-bold text-amber-600 sm:block dark:text-amber-400">
+              <Radio className="mr-1 inline h-3 w-3" />
+              Mencari server…
+            </span>
+          )}
         </div>
       </div>
-
-      {!meOnline && connected && (
-        <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-          <UserPlus className="h-3.5 w-3.5" /> Status online-mu belum muncul — muat ulang halaman.
-        </p>
-      )}
     </div>
   )
 }

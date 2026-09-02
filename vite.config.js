@@ -11,8 +11,9 @@ export default defineConfig({
     strictPort: true,
     allowedHosts: true,
     proxy: {
-      // Server chat real-time (WebSocket) → port 3001
+      // Server chat + roster user (WebSocket + HTTP API) → port 3001
       '/ws': { target: 'ws://localhost:3001', ws: true },
+      '/api': { target: 'http://localhost:3001', changeOrigin: true },
     },
   },
   build: {

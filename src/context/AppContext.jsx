@@ -183,7 +183,7 @@ export function AppProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.username])
 
-  /* Persist gamifikasi ke akun saat berubah */
+  /* Persist gamifikasi ke akun + sinkron ke server (roster leaderboard, debounce) */
   useEffect(() => {
     if (!user) return
     updateUser({
@@ -195,6 +195,21 @@ export function AppProvider({ children }) {
         completedQuizzes: state.completedQuizzes,
       },
     })
+    const t = setTimeout(() => {
+      fetch('/api/users/upsert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: user.username,
+          name: user.name,
+          class: user.class,
+          xp: state.xp,
+          streak: state.streak,
+          avatarUrl: user.avatarUrl || '',
+        }),
+      }).catch(() => {})
+    }, 1500)
+    return () => clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     user?.username,

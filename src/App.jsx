@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { Ban } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
-import { AppProvider, useApp } from './context/AppContext'
+import { AppProvider, useApp, levelInfo } from './context/AppContext'
+import { chatClient } from './lib/chatClient'
+import AdminApp from './components/admin/AdminApp'
 import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
@@ -76,7 +79,15 @@ function PageRouter() {
 
 function Shell() {
   const { state, poweringOff } = useApp()
+  const { user } = useAuth()
   const consoleMode = !!state.theme.console
+
+  /* Koneksi chat level aplikasi: user "online" selama app terbuka */
+  const lvLevel = levelInfo(state.xp).level
+  useEffect(() => {
+    if (user) chatClient.start(user, lvLevel)
+  }, [user?.username, lvLevel])
+  useEffect(() => () => chatClient.stop(), [])
   const [booting, setBooting] = useState(consoleMode)
   const prevConsole = useRef(consoleMode)
   useEffect(() => {
@@ -132,18 +143,66 @@ function Shell() {
   )
 }
 
+function BannedScreen({ name }) {
+  return (
+    <div className="grid min-h-screen place-items-center px-4">
+      <div className="card max-w-md p-8 text-center">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400">
+          <Ban className="h-8 w-8" />
+        </span>
+        <h1 className="mt-4 font-display text-xl font-extrabold text-slate-900 dark:text-white">
+          Akun Diblokir
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+          Halo {name}, akunmu diblokir oleh administrator IDNcheat. Hubungi admin jika kamu
+          merasa ini salah.
+        </p>
+        <button onClick={() => window.location.reload()} className="btn-ghost mt-6">
+          Muat Ulang
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function Root() {
   const { user } = useAuth()
-  return user ? (
+  const [banned, setBanned] = useState(false)
+
+  /* Cek status blokir dari server (roster admin) */
+  useEffect(() => {
+    if (!user) {
+      setBanned(false)
+      return
+    }
+    let on = true
+    fetch('/api/users')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (!on) return
+        const me = d?.users?.find((u) => u.username === user.username)
+        setBanned(!!me?.banned)
+      })
+      .catch(() => {})
+    return () => {
+      on = false
+    }
+  }, [user?.username])
+
+  if (!user) return <AuthPage />
+  if (banned) return <BannedScreen name={user?.name || user?.username} />
+  return (
     <ErrorBoundary>
       <Shell />
     </ErrorBoundary>
-  ) : (
-    <AuthPage />
   )
 }
 
 export default function App() {
+  /* Rute /admin → Panel Administrator (login terpisah) */
+  if (typeof window !== 'undefined' && window.location.pathname.includes('/admin')) {
+    return <AdminApp />
+  }
   return (
     <AuthProvider>
       <AppProvider>

@@ -10,8 +10,9 @@ export function buildLeaderboard(users, currentUsername) {
       name: u.name || u.username,
       username: u.username,
       prog: u.class || '',
-      xp: u.gamification?.xp ?? 0,
-      streak: u.gamification?.streak ?? 0,
+      // dukung format lokal (u.gamification.xp) & server (u.xp)
+      xp: u.gamification?.xp ?? u.xp ?? 0,
+      streak: u.gamification?.streak ?? u.streak ?? 0,
       avatar: u.avatar,
       avatarUrl: u.avatarUrl || '',
       you: u.username === currentUsername,

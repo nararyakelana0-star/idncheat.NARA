@@ -1,9 +1,38 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Trophy, Crown, Flame, Medal, Users } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { buildLeaderboard } from '../../data/leaderboard'
 import PageTitle from '../ui/PageTitle'
 import Avatar from '../ui/Avatar'
+
+/* Ambil roster user dari server (semua yang pernah login/register),
+   refresh tiap 15 detik + saat window fokus. Fallback: user lokal. */
+function useServerRoster() {
+  const [rows, setRows] = useState(null)
+  const [live, setLive] = useState(false)
+  useEffect(() => {
+    let on = true
+    const load = () => {
+      fetch('/api/users')
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!on || !d?.users) return
+          setRows(d.users)
+          setLive(true)
+        })
+        .catch(() => {})
+    }
+    load()
+    const iv = setInterval(load, 15000)
+    window.addEventListener('focus', load)
+    return () => {
+      on = false
+      clearInterval(iv)
+      window.removeEventListener('focus', load)
+    }
+  }, [])
+  return { rows, live }
+}
 
 /* =====================================================================
    Papan Peringkat — hanya member NYATA yang sudah login/register.
@@ -18,7 +47,10 @@ const PODIUM_STYLE = {
 
 export default function LeaderboardPage() {
   const { user, users } = useAuth()
-  const rows = buildLeaderboard(users, user?.username)
+  const { rows: serverRows, live } = useServerRoster()
+  // server = semua user lintas browser; lokal = fallback kalau server offline
+  const source = live && serverRows && serverRows.length ? serverRows : users
+  const rows = buildLeaderboard(source, user?.username)
   const top3 = rows.slice(0, 3)
   // urutan visual podium: 2, 1, 3
   const podium = [top3[1], top3[0], top3[2]].filter(Boolean)
@@ -29,7 +61,7 @@ export default function LeaderboardPage() {
       <PageTitle
         crumb="Kompetisi"
         title="Papan Peringkat"
-        sub={`${rows.length} member terdaftar di IDNcheat. Papan ini hanya berisi user asli yang sudah login/register — bukan data contoh.`}
+        sub={`${rows.length} member terdaftar di server IDNcheat${live ? ' (live)' : ''}. Setiap orang yang login/register langsung masuk ke sini — bukan data contoh.`}
       />
 
       {/* Podium (tampil jika ada minimal 1 member) */}
